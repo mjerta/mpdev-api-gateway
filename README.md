@@ -1,6 +1,6 @@
 # MPDev API Gateway
 
-This repository hosts the shared gateway that fronts your backend microservices. It terminates OAuth (Google) login, mints JWTs, enforces route-level authorization, injects user identity headers, proxies traffic, and offers a built-in Test UI/health dashboard for local exploration.
+This repository hosts the shared gateway that fronts my backend microservices. It terminates OAuth (Google) login, mints JWTs, enforces route-level authorization, injects user identity headers, proxies traffic, and offers a built-in Test UI/health dashboard for local exploration.
 
 ## Architecture
 
@@ -8,21 +8,27 @@ This repository hosts the shared gateway that fronts your backend microservices.
 | --- | --- |
 | **API Gateway** (`mpdev-api-gateway`) | Handles OAuth login, JWT generation/validation, fine-grained route security, request logging, health reporting, and forwarding to downstream services. Includes the Test UI (`/test-ui`). |
 | **Domain Microservices** | Own their business logic and persistence. They sit behind the gateway, trust its JWTs, and expose REST endpoints that map to gateway routes. |
-```mermaid
 flowchart LR
     Client[Browser / API Client]
-    Gateway[API Gateway
-    (OAuth + JWT + Test UI)]
-    Service[Domain Microservice
-    (Business Logic)]
+    
+    subgraph Infrastructure
+        Gateway["API Gateway
+        (OAuth + JWT + Test UI)"]
+    end
 
+    subgraph Backend
+        Service["Domain Microservice
+        (Business Logic)"]
+    end
+
+    %% Main Request Flow
     Client -->|Requests / Web UI| Gateway
     Gateway -->|Proxies| Service
     Service -->|Responses| Gateway
     Gateway -->|Responses| Client
 
+    %% Background Tasks
     Gateway -.->|Health Probes| Service
-```
 
 Key points:
 - OAuth & JWT logic lives exclusively in the gateway. Microservices no longer store users/authorities.
@@ -32,8 +38,7 @@ Key points:
 ## Project Layout
 
 - `docker-compose.yml` – spins up a standalone Postgres database for the gateway (`gateway-db`, default host port `5433`).
-- `.env` – local gateway configuration (DB URL, OAuth credentials, JWT secret, downstream URIs, admin email). Loaded automatically via `spring.config.import`.
-- `.env.gateway-db` – credentials used by the Docker Compose Postgres container.
+- `.env` – local gateway configuration (Docker Compose file, DB URL, OAuth credentials, JWT secret, downstream URIs, admin email). Loaded automatically via `spring.config.import`.
 - `src/main/resources/application.yml` – consolidated Spring Boot config (datasource, OAuth client, JWT secret, route metadata, management endpoints, etc.).
 - `src/main/java/com/example/gateway_service/**` – Spring Boot code (security config, controllers, models, repositories, Thymeleaf Test UI, etc.).
 
@@ -99,5 +104,3 @@ Key points:
 - Externalize route metadata into configuration so new services can be onboarded without code changes.
 
 ---
-
-Questions or ideas? Open an issue or start a discussion so we can iterate on the gateway/ microservice split together.

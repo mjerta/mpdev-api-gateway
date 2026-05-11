@@ -1,0 +1,56 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: gateway-service
+  datasource:
+    url: ${GATEWAY_DB_URL:jdbc:postgresql://localhost:5433/pm_gateway_auth}
+    username: ${GATEWAY_DB_USERNAME:pm_gateway_auth}
+    password: ${GATEWAY_DB_PASSWORD:pm_gateway_auth}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: project-manager-backend
+              uri: ${PROJECT_MANAGER_BACKEND_URI:http://localhost:8080}
+              predicates:
+                - Path=/project-manager-backend/**
+              filters:
+                - StripPrefix=1
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH_CLIENT_ID:change-me}
+            client-secret: ${OAUTH_CLIENT_SECRET:change-me}
+            scope: openid,profile,email
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+server:
+  port: 8765
+jwt:
+  secret: ${JWT_SECRET_BASE64:T4zXHkMZ2rqqVbAbmztihVlEfKix6mCXx7DZcgfP/WY=}
+  expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
+app:
+  admin:
+    email: ${ADMIN_USER:admin@example.com}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true

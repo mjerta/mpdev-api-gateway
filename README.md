@@ -47,7 +47,7 @@ Key points:
    Start additional databases from each microservice repo as needed.
 
 2. **Configure env vars**
-   - Copy `.env` to `.env.local` (or edit `.env`) and fill in:
+   - Copy `.env.example` to `.env` and fill in:
      - `GATEWAY_DB_URL/USERNAME/PASSWORD`
      - `OAUTH_CLIENT_ID` / `OAUTH_CLIENT_SECRET` (Google credentials)
      - `JWT_SECRET_BASE64` (32-byte Base64 string)

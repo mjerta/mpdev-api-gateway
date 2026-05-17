@@ -8,17 +8,17 @@ This repository hosts the shared gateway that fronts my backend microservices. I
 | --- | --- |
 | **API Gateway** (`mpdev-api-gateway`) | Handles OAuth login, JWT generation/validation, fine-grained route security, request logging, health reporting, and forwarding to downstream services. Includes the Test UI (`/test-ui`). |
 | **Domain Microservices** | Own their business logic and persistence. They sit behind the gateway, trust its JWTs, and expose REST endpoints that map to gateway routes. |
+
+```mermaid
 flowchart LR
     Client[Browser / API Client]
-    
+
     subgraph Infrastructure
-        Gateway["API Gateway
-        (OAuth + JWT + Test UI)"]
+        Gateway["API Gateway\n(OAuth + JWT + Test UI)"]
     end
 
     subgraph Backend
-        Service["Domain Microservice
-        (Business Logic)"]
+        Service["Domain Microservice\n(Business Logic)"]
     end
 
     %% Main Request Flow
@@ -29,6 +29,7 @@ flowchart LR
 
     %% Background Tasks
     Gateway -.->|Health Probes| Service
+```
 
 Key points:
 - OAuth & JWT logic lives exclusively in the gateway. Microservices no longer store users/authorities.

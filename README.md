@@ -56,7 +56,8 @@ Key points:
      - `GATEWAY_DB_URL/USERNAME/PASSWORD`
      - `OAUTH_CLIENT_ID` / `OAUTH_CLIENT_SECRET` (Google credentials)
      - `JWT_SECRET_BASE64` (32-byte Base64 string)
-     - `PROJECT_MANAGER_BACKEND_URI` (default `http://localhost:8080`)
+     - `PROJECT_MANAGER_BACKEND_URI` (default `http://localhost:8081` for production traffic)
+     - `PROJECT_MANAGER_BACKEND_STAGING_URI` (default `http://localhost:8080` for staging traffic)
      - `ADMIN_USER` email (grants `ADMIN` authority on first login)
 
 3. **Run services**

@@ -698,12 +698,19 @@
 
     const SERVICE_OPTIONS = [
       {
-        id: 'project-manager',
-        label: 'Project Manager Backend',
+        id: 'project-manager-prod',
+        label: 'Project Manager Backend · Prod',
         basePath: '/project-manager-backend',
-        description: 'Routes through the gateway to the Project Manager microservice (projects, tasks, status, images).',
+        description: 'Routes through the gateway to the production Project Manager microservice (projects, tasks, status, images).',
         healthPath: '/project-manager-backend/actuator/health',
         default: true
+      },
+      {
+        id: 'project-manager-staging',
+        label: 'Project Manager Backend · Staging',
+        basePath: '/project-manager-backend-staging',
+        description: 'Routes through the gateway to the staging Project Manager deployment for smoke testing.',
+        healthPath: '/project-manager-backend-staging/actuator/health'
       },
       {
         id: 'gateway',
@@ -736,7 +743,7 @@
         id: 'admin',
         name: 'Admin',
         description: 'Protected admin routes',
-        serviceId: 'project-manager',
+        serviceIds: ['project-manager-prod', 'project-manager-staging'],
         endpoints: [
           {label: 'Admin Message', method: 'GET', path: '/api/v1/admin', bodyType: 'none', requiresAuth: true, description: 'Requires an admin JWT to succeed.'}
         ]
@@ -745,7 +752,7 @@
         id: 'projects',
         name: 'Projects',
         description: 'CRUD for projects',
-        serviceId: 'project-manager',
+        serviceIds: ['project-manager-prod', 'project-manager-staging'],
         endpoints: [
           {label: 'Create Project', method: 'POST', path: '/api/v1/projects', bodyType: 'json', requiresAuth: true, sampleBody: {title: 'Demo project', description: 'Optional description'}, description: 'Creates a project. Title must be 3-20 characters.'},
           {label: 'List Projects', method: 'GET', path: '/api/v1/projects', bodyType: 'none', requiresAuth: true, description: 'Returns all projects with image links.'},
@@ -758,7 +765,7 @@
         id: 'tasks',
         name: 'Tasks',
         description: 'Manage project tasks with statuses',
-        serviceId: 'project-manager',
+        serviceIds: ['project-manager-prod', 'project-manager-staging'],
         endpoints: [
           {label: 'Create Task', method: 'POST', path: '/api/v1/tasks', bodyType: 'json', requiresAuth: true, sampleBody: {name: 'Design wireframes', description: 'Homepage flow', projectId: 1, statusId: 1}, description: 'Creates a task linked to an existing project and status.'},
           {label: 'List Tasks', method: 'GET', path: '/api/v1/tasks', bodyType: 'none', requiresAuth: true, description: 'Returns all tasks with project/status details.'},
@@ -771,7 +778,7 @@
         id: 'status',
         name: 'Status',
         description: 'Status catalogue',
-        serviceId: 'project-manager',
+        serviceIds: ['project-manager-prod', 'project-manager-staging'],
         endpoints: [
           {label: 'Create Status', method: 'POST', path: '/api/v1/status', bodyType: 'json', requiresAuth: true, sampleBody: {name: 'In progress', description: 'Shown on project cards'}, description: 'Adds a new status row.'},
           {label: 'List Status', method: 'GET', path: '/api/v1/status', bodyType: 'none', requiresAuth: true, description: 'Returns the available statuses.'},
@@ -784,7 +791,7 @@
         id: 'images',
         name: 'Images',
         description: 'Multipart image upload/download',
-        serviceId: 'project-manager',
+        serviceIds: ['project-manager-prod', 'project-manager-staging'],
         endpoints: [
           {
             label: 'Upload Image',
@@ -876,11 +883,40 @@
 
     const getServiceById = (serviceId) => SERVICE_OPTIONS.find(option => option.id === serviceId) ?? null;
 
+    const resolveGroupServiceId = (group) => {
+      if (!group) {
+        return state.activeServiceId;
+      }
+      if (group.serviceId) {
+        return group.serviceId;
+      }
+      if (Array.isArray(group.serviceIds) && group.serviceIds.length) {
+        if (group.serviceIds.includes(state.activeServiceId)) {
+          return state.activeServiceId;
+        }
+        return group.serviceIds[0];
+      }
+      return state.activeServiceId;
+    };
+
+    const groupMatchesService = (group, serviceId) => {
+      if (!group) {
+        return false;
+      }
+      if (group.serviceId) {
+        return group.serviceId === serviceId;
+      }
+      if (Array.isArray(group.serviceIds) && group.serviceIds.length) {
+        return group.serviceIds.includes(serviceId);
+      }
+      return true;
+    };
+
     const getActiveService = () => getServiceById(state.activeServiceId) ?? SERVICE_OPTIONS[0] ?? null;
 
     const getVisibleGroups = () => {
       const serviceId = state.activeServiceId;
-      return ENDPOINT_GROUPS.filter(group => !group.serviceId || group.serviceId === serviceId);
+      return ENDPOINT_GROUPS.filter(group => groupMatchesService(group, serviceId));
     };
 
     const getActiveGroup = () => ENDPOINT_GROUPS.find(group => group.id === state.activeGroupId) ?? null;
@@ -1220,7 +1256,8 @@
         elements.controllerHint.textContent = 'No controllers available for this service yet.';
         return;
       }
-      const groupServiceLabel = formatServiceLabel(group.serviceId ?? state.activeServiceId);
+      const groupServiceId = resolveGroupServiceId(group);
+      const groupServiceLabel = formatServiceLabel(groupServiceId);
       elements.controllerHint.textContent = `${group.description} · ${groupServiceLabel}`;
       group.endpoints.forEach((endpoint, idx) => {
         const card = document.createElement('button');
@@ -1239,8 +1276,9 @@
         path.textContent = endpoint.path;
         const serviceTag = document.createElement('small');
         serviceTag.className = 'service-tag';
-        const effectiveServiceId = endpoint.forceServiceId ?? endpoint.serviceId ?? group.serviceId ?? state.activeServiceId;
-        serviceTag.textContent = formatServiceLabel(effectiveServiceId);
+        const candidateServiceId = endpoint.forceServiceId ?? endpoint.serviceId ?? groupServiceId;
+        const labelServiceId = getServiceById(candidateServiceId) ? candidateServiceId : groupServiceId;
+        serviceTag.textContent = formatServiceLabel(labelServiceId);
         meta.append(title, serviceTag, path);
 
         card.append(badge, meta);
@@ -1350,9 +1388,11 @@
       if (!rawEndpoint) {
         return null;
       }
-      const serviceId = rawEndpoint.serviceId ?? group.serviceId ?? null;
+      const groupServiceId = resolveGroupServiceId(group);
+      const serviceId = rawEndpoint.serviceId ?? groupServiceId ?? null;
+      const normalizedServiceId = getServiceById(serviceId) ? serviceId : groupServiceId;
       const forceServiceId = rawEndpoint.forceServiceId ?? null;
-      return {...rawEndpoint, serviceId, forceServiceId};
+      return {...rawEndpoint, serviceId: normalizedServiceId, forceServiceId};
     };
 
     const renderFormFields = (fields) => {

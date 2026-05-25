@@ -43,6 +43,7 @@ spring:
           google:
             issuer-uri: https://accounts.google.com
 server:
+  forward-headers-strategy: framework
   port: 8765
 jwt:
   secret: ${JWT_SECRET_BASE64:T4zXHkMZ2rqqVbAbmztihVlEfKix6mCXx7DZcgfP/WY=}

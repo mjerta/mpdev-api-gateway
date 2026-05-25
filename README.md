@@ -98,17 +98,17 @@ Key points:
 
 - Workflow: `.github/workflows/deploy.yml` runs on pushes to `main`, executes `./mvnw clean verify`, then SSHes into your VPS to rebuild/restart the gateway container.
 - Required repository secrets (set with `gh secret set <NAME>` or through the GitHub UI):
-  - `GATEWAY_SSH_HOST`, `GATEWAY_SSH_USER`, `GATEWAY_SSH_KEY` – SSH connection details (private key should be the PEM contents).
+  - `HOST`, `USERNAME`, `SSH_PRIVATE_KEY` – SSH connection details (private key should be the PEM contents).
   - `GATEWAY_REMOTE_APP_DIR` – absolute path on the server where this repo is checked out (e.g., `/var/www/mpdev-api-gateway`).
   - `GATEWAY_REMOTE_COMPOSE_DIR` – directory containing the Docker Compose file that defines the gateway service.
   - `GATEWAY_COMPOSE_SERVICE` – the service name inside that compose file to restart (e.g., `gateway-service`).
   - `GATEWAY_NGINX_CONTAINER` (optional) – container name to `nginx -t && nginx -s reload` after deployment; leave empty if not needed.
 - Example using GitHub CLI:
   ```bash
-  gh secret set GATEWAY_SSH_HOST --body "your.server"
-  gh secret set GATEWAY_SSH_USER --body "deploy"
+  gh secret set HOST --body "your.server"
+  gh secret set USERNAME --body "deploy"
   # Use the *private* key that matches the public key on your VPS
-  gh secret set GATEWAY_SSH_KEY < ~/.ssh/mpdev-gateway-deploy
+  gh secret set SSH_PRIVATE_KEY < ~/.ssh/mpdev-gateway-deploy
   gh secret set GATEWAY_REMOTE_APP_DIR --body "/var/www/mpdev-api-gateway"
   gh secret set GATEWAY_REMOTE_COMPOSE_DIR --body "/opt/docker-setups/gateway"
   gh secret set GATEWAY_COMPOSE_SERVICE --body "gateway-service"

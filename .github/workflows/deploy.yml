@@ -64,6 +64,7 @@ jobs:
             git fetch origin main
             git checkout main
             git reset --hard origin/main
+            echo secrets.GATEWAY_REMOTE_COMPOSE_DIR
             cd "${{ secrets.GATEWAY_REMOTE_COMPOSE_DIR }}"
             APP_VERSION=${APP_VERSION:-latest} docker compose up --build -d --remove-orphans ${{ secrets.GATEWAY_COMPOSE_SERVICE }}
             if [ -n "${{ secrets.GATEWAY_NGINX_CONTAINER }}" ]; then

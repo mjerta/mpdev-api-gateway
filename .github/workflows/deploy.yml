@@ -21,21 +21,41 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          fetch_all_tags: true
+          custom_release_rules: |
+            breaking:major,
+            feature:minor,
+            feat:minor,
+            fix:patch,
+            perf:patch
+
+      - name: Create a GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Maven tests
         run: ./mvnw -B clean verify
-
-      - name: Set short SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to production via SSH
         uses: appleboy/ssh-action@master
         env:
-          APP_VERSION: ${{ steps.vars.outputs.sha_short }}
+          APP_VERSION: ${{ steps.tag_version.outputs.new_tag }}
         with:
-          host: ${{ secrets.GATEWAY_SSH_HOST }}
-          username: ${{ secrets.GATEWAY_SSH_USER }}
-          key: ${{ secrets.GATEWAY_SSH_KEY }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
             cd "${{ secrets.GATEWAY_REMOTE_APP_DIR }}"

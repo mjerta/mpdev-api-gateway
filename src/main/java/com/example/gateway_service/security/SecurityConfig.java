@@ -93,6 +93,7 @@ public class SecurityConfig {
             .requestMatchers("/oauth2/**").permitAll()
             .requestMatchers("/test-ui/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/error").permitAll()
             .requestMatchers(HttpMethod.GET, "/project-manager-backend/actuator/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/project-manager-backend/api/v1/projects/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/project-manager-backend/api/v1/status/**").permitAll()

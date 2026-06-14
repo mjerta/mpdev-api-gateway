@@ -76,8 +76,8 @@ public class SecurityConfig {
       if (uri == null) {
         return false;
       }
-      return uri.startsWith("/project-manager-backend/api/")
-          || uri.startsWith("/project-manager-backend-staging/api/");
+      return uri.startsWith("/project-manager-backend/api/");
+
     };
     entryPoints.put(apiMatcher, new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
     DelegatingAuthenticationEntryPoint delegatingEntryPoint = new DelegatingAuthenticationEntryPoint(entryPoints);
@@ -103,16 +103,7 @@ public class SecurityConfig {
             .requestMatchers("/project-manager-backend/api/v1/projects/**").hasAuthority("ADMIN")
             .requestMatchers("/project-manager-backend/api/v1/tasks/**").hasAuthority("ADMIN")
             .requestMatchers("/project-manager-backend/api/v1/status/**").hasAuthority("ADMIN")
-            .requestMatchers(HttpMethod.GET, "/project-manager-backend-staging/actuator/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/project-manager-backend-staging/api/v1/projects/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/project-manager-backend-staging/api/v1/status/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/project-manager-backend-staging/api/v1/tasks/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/project-manager-backend-staging/api/v1/images/**").permitAll()
-            .requestMatchers("/project-manager-backend-staging/api/v1/admin/**").hasAuthority("ADMIN")
-            .requestMatchers("/project-manager-backend-staging/api/v1/images/**").hasAuthority("ADMIN")
-            .requestMatchers("/project-manager-backend-staging/api/v1/projects/**").hasAuthority("ADMIN")
-            .requestMatchers("/project-manager-backend-staging/api/v1/tasks/**").hasAuthority("ADMIN")
-            .requestMatchers("/project-manager-backend-staging/api/v1/status/**").hasAuthority("ADMIN")
+
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex.authenticationEntryPoint(delegatingEntryPoint))
         .oauth2Login(oauth2 -> oauth2

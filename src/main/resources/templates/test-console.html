@@ -699,21 +699,16 @@
     const SERVICE_OPTIONS = [
       {
         id: 'project-manager-prod',
-        label: 'Project Manager Backend · Prod',
+        label: 'Project Manager Backend',
         basePath: '/project-manager-backend',
-        description: 'Routes through the gateway to the production Project Manager microservice (projects, tasks, status, images).',
+        description: 'Routes through the gateway to the Project Manager microservice (projects, tasks, status, images).',
         healthPath: '/project-manager-backend/actuator/health',
+
         default: true
       },
       {
-        id: 'project-manager-staging',
-        label: 'Project Manager Backend · Staging',
-        basePath: '/project-manager-backend-staging',
-        description: 'Routes through the gateway to the staging Project Manager deployment for smoke testing.',
-        healthPath: '/project-manager-backend-staging/actuator/health'
-      },
-      {
         id: 'gateway',
+
         label: 'Gateway Only',
         basePath: '',
         description: 'Use this for routes served directly by the gateway such as /login and /test-ui.',
@@ -743,7 +738,7 @@
         id: 'admin',
         name: 'Admin',
         description: 'Protected admin routes',
-        serviceIds: ['project-manager-prod', 'project-manager-staging'],
+        serviceIds: ['project-manager-prod'],
         endpoints: [
           {label: 'Admin Message', method: 'GET', path: '/api/v1/admin', bodyType: 'none', requiresAuth: true, description: 'Requires an admin JWT to succeed.'}
         ]
@@ -752,7 +747,7 @@
         id: 'projects',
         name: 'Projects',
         description: 'CRUD for projects',
-        serviceIds: ['project-manager-prod', 'project-manager-staging'],
+        serviceIds: ['project-manager-prod'],
         endpoints: [
           {label: 'Create Project', method: 'POST', path: '/api/v1/projects', bodyType: 'json', requiresAuth: true, sampleBody: {title: 'Demo project', description: 'Optional description'}, description: 'Creates a project. Title must be 3-20 characters.'},
           {label: 'List Projects', method: 'GET', path: '/api/v1/projects', bodyType: 'none', requiresAuth: true, description: 'Returns all projects with image links.'},
@@ -765,7 +760,7 @@
         id: 'tasks',
         name: 'Tasks',
         description: 'Manage project tasks with statuses',
-        serviceIds: ['project-manager-prod', 'project-manager-staging'],
+        serviceIds: ['project-manager-prod'],
         endpoints: [
           {label: 'Create Task', method: 'POST', path: '/api/v1/tasks', bodyType: 'json', requiresAuth: true, sampleBody: {name: 'Design wireframes', description: 'Homepage flow', projectId: 1, statusId: 1}, description: 'Creates a task linked to an existing project and status.'},
           {label: 'List Tasks', method: 'GET', path: '/api/v1/tasks', bodyType: 'none', requiresAuth: true, description: 'Returns all tasks with project/status details.'},
@@ -778,7 +773,7 @@
         id: 'status',
         name: 'Status',
         description: 'Status catalogue',
-        serviceIds: ['project-manager-prod', 'project-manager-staging'],
+        serviceIds: ['project-manager-prod'],
         endpoints: [
           {label: 'Create Status', method: 'POST', path: '/api/v1/status', bodyType: 'json', requiresAuth: true, sampleBody: {name: 'In progress', description: 'Shown on project cards'}, description: 'Adds a new status row.'},
           {label: 'List Status', method: 'GET', path: '/api/v1/status', bodyType: 'none', requiresAuth: true, description: 'Returns the available statuses.'},
@@ -791,7 +786,7 @@
         id: 'images',
         name: 'Images',
         description: 'Multipart image upload/download',
-        serviceIds: ['project-manager-prod', 'project-manager-staging'],
+        serviceIds: ['project-manager-prod'],
         endpoints: [
           {
             label: 'Upload Image',

@@ -25,12 +25,7 @@ spring:
                 - Path=/project-manager-backend/**
               filters:
                 - StripPrefix=1
-            - id: project-manager-backend-staging
-              uri: ${PROJECT_MANAGER_BACKEND_STAGING_URI:http://localhost:8080}
-              predicates:
-                - Path=/project-manager-backend-staging/**
-              filters:
-                - StripPrefix=1
+
   security:
     oauth2:
       client:
